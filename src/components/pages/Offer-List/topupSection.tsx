@@ -4,8 +4,8 @@ import { IoSearchSharp, IoArrowBackCircleSharp, IoArrowForwardCircleSharp } from
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../../reduxKit/store";
-import { GetBrandsWithService, GetOffersByBrand, OfferResponse } from '../../../reduxKit/actions/user/userOfferListing';
-import { GetBrandsBySubServiceOrService, GetServicesWithSubservices } from "../../../reduxKit/actions/offer/serviceSubServiceBrandSelection";
+import { GetBrandsWithService, GetOffersByBrand, GetSubServices, OfferResponse } from '../../../reduxKit/actions/user/userOfferListing';
+import { GetBrandsBySubServiceOrService } from "../../../reduxKit/actions/offer/serviceSubServiceBrandSelection";
 import NoDataFound from '../../../assets/Images/no-data.png'
 
 
@@ -16,6 +16,12 @@ interface NestedGameBrands {
   name: string;
   nameAr: string;
   id: string;
+}
+
+
+interface Service {
+  id: string;
+  name: string;
 }
 
 
@@ -66,11 +72,14 @@ const TopUpSection: React.FC = () => {
   useEffect(() => {
     const getServiceWithSubservices = async () => {
       try {
-        const response = await dispatch(GetServicesWithSubservices());
+        const response = await dispatch(GetSubServices(serviceId));
         const services = response.payload;
-        const selectedService = services.find((service: { id: string }) => service.id === serviceId);
-        const subservices = selectedService.subservices.map((subservice: { id: string; name: string }) => subservice);
-        setSubserviceNames([{ id: "1", name: "All" }, ...subservices]);
+        console.log('sub services are', services.data);
+        setSubserviceNames([
+          { id: "1", name: "All" },
+          ...services.data.map(({ id, name } : Service) => ({ id, name }))
+        ]);
+        
         setSelectedItem("1");
       } catch (error) {
         console.error("getServiceWithSubservices error", error);

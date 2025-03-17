@@ -67,4 +67,27 @@ export const GetOffersDetail = createAsyncThunk(
       }
     }
   );
+
+
+
+  export const GetSubServices = createAsyncThunk(
+    "user/GetSubServices",
+    async (serviceId: string, { rejectWithValue }) => {
+      try {
+        const response = await axiosIn.get(
+          `/user/offer-listing/subservices?serviceId=${serviceId}`,
+          configWithToken()
+        );
+        console.log("response of GetSubServices", response.data);
+        return response.data;
+      } catch (error: any) {
+        if (error.response && error.response.data) {
+          return rejectWithValue(error.response.data);
+        } else {
+          return rejectWithValue({ message: "Something went wrong!" });
+        }
+      }
+    }
+  );
+  
   

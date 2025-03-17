@@ -76,7 +76,7 @@ export const GetOffersDetail = createAsyncThunk(
       try {
         const response = await axiosIn.get(
           `/user/offer-listing/subservices?serviceId=${serviceId}`,
-          configWithToken()
+       
         );
         console.log("response of GetSubServices", response.data);
         return response.data;

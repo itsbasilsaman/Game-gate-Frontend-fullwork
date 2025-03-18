@@ -1,16 +1,40 @@
-import { z } from 'zod';
-import { toFormikValidationSchema } from 'zod-formik-adapter';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export const validateUserSignup = (values: any) => {
+  const errors: any = {};
 
-export const userSignupValidationSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  country: z.string().min(1, 'Country is required'),
-  userName: z.string().min(1, 'Username is required'),
-  email: z.string().email('Invalid email address').min(1, 'Email is required'),
-  gender: z.enum(['MALE', 'FEMALE', 'OTHER'], {
-    errorMap: () => ({ message: 'Invalid gender' }),
-  }),
-  phone: z.string().min(1, 'Phone number is required'), // Add phone validation if needed
-});
+  if (!values.firstName) {
+    errors.firstName = 'First name is required';
+  }
 
-export const formikValidationSchema = toFormikValidationSchema(userSignupValidationSchema);
+  if (!values.lastName) {
+    errors.lastName = 'Last name is required';
+  }
+
+  if (!values.country) {
+    errors.country = 'Country is required';
+  }
+
+  if (!values.userName) {
+    errors.userName = 'Username is required';
+  }
+
+  if (!values.email) {
+    errors.email = 'Email is required';
+  } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(values.email)) {
+    errors.email = 'Invalid email address';
+  }
+
+  if (!values.gender) {
+    errors.gender = 'Gender is required';
+  } else if (!['MALE', 'FEMALE', 'OTHER'].includes(values.gender)) {
+    errors.gender = 'Invalid gender';
+  }
+
+  if (!values.phone) {
+    errors.phone = 'Phone number is required';
+  }
+
+  return errors;
+};
+
+export const formikValidationSchema = validateUserSignup;

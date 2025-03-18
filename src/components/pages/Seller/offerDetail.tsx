@@ -24,7 +24,7 @@ const OfferDetail: React.FC = () => {
   const SelectedSubServiceId = queryParams.get("SelectedSubServiceId") || "";
   const selectedBrandId = queryParams.get("selectedBrandId") || "";
   console.log('selectedBrandId',selectedBrandId, 'SelectedServiceId',SelectedServiceId,'SelectedSubServiceId',SelectedSubServiceId);
-  
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [productData, setProductData] = useState<any>({});
   const [isLoading, setIsLoading] = useState(false); // Add loading state
 
@@ -60,10 +60,10 @@ const OfferDetail: React.FC = () => {
           SelectedSubServiceId,
           selectedBrandId,
         };
+        console.log('The Data', data);
+        
         const response = await dispatch(GetProducetsForCreateOffer(data));
         console.log('The Response Data',response?.payload.data);
-
-
         const filteredData = response?.payload.data.filter((item: { serviceId: string; subServiceId: string; brandId: string; }) => {
           return (
             (!SelectedServiceId || item.serviceId === SelectedServiceId) &&
@@ -81,7 +81,7 @@ const OfferDetail: React.FC = () => {
    
         
         if (response.payload.success) {
-          toast.success(response.payload.message);
+          
           
           // Set deliveryMethods based on API response
           if (response.payload.data[0]?.deliveryTypes) {
@@ -136,6 +136,7 @@ const OfferDetail: React.FC = () => {
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
+      setIsSubmitting(true)
       try {
         const formData = new FormData();
         formData.append("productId", productData?.id || "");
@@ -203,6 +204,8 @@ const OfferDetail: React.FC = () => {
           showClass: { popup: "animate__animated animate__fadeInDown" },
           hideClass: { popup: "animate__animated animate__fadeOutUp" },
         });
+      } finally {
+        setIsSubmitting(false)
       }
     } else {
       console.log("Validation errors:", validationErrors);
@@ -386,9 +389,17 @@ const OfferDetail: React.FC = () => {
 
         <div className="flex gap-4 mt-6 justify-end">
           <button className="px-6 py-3 bg-gray-300 text-gray-700 hover:bg-gray-100">Discard</button>
-          <button className="px-6 py-3 primary-background text-white hover:bg-blue-950" onClick={handleSubmit}>
-            Finish
-          </button>
+          <button
+  className="px-6 py-3 primary-background text-white hover:bg-blue-950"
+  onClick={handleSubmit}
+  disabled={isSubmitting} // Disable the button when submitting
+>
+  {isSubmitting ? (
+    <ClipLoader color="#ffffff" size={20} /> // Show loading spinner
+  ) : (
+    "Finish"
+  )}
+</button>
         </div>
       </div>
     </div>

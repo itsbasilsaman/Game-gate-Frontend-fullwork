@@ -10,8 +10,7 @@ import { useEffect, useState } from "react"
 import Footer from "../user/Footer"
 import { Navbar } from "../user/Navbar"
 import { FaEdit } from "react-icons/fa";
-
-
+ 
 const GetOfferById: React.FC = () => {
   const [productItem, setProductItem] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -231,7 +230,7 @@ const GetOfferById: React.FC = () => {
                     <div className="bg-gray-200 rounded-lg border border-gray-200 p-4 shadow-sm">
                       <p className="text-center font-semibold uppercase" style={{ fontFamily: 'Unbounded' }}>Sub Service Details</p>
                       <div className="space-y-2">
-                        <p className="font-medium">Sub Service</p>
+                        <p className="font-medium"> <span className="font-medium text-gray-600">Name - </span> {productItem.product?.subService?.name}</p>
                         <p className="text-gray-600"> </p>
                       </div>
                     </div>

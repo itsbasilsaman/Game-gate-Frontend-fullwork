@@ -283,9 +283,14 @@ const TopUpSection: React.FC = () => {
                       alt={game.brand.name}
                       style={{ zIndex: "-10" }}
                     />
-                    <p className="lg:px-[13px] px-[11px] py-[3px] lg:py-[8px] lg:h-[45px] offer-menu lg:text-[18px] font-medium rounded-[1000px]">
-                      {offers[game.id] || 0} Offers
-                    </p>
+                  <p className={`lg:px-[13px] px-[11px] py-[3px] lg:py-[8px] lg:h-[45px] offer-menu lg:text-[18px] font-medium rounded-[1000px] flex items-center justify-center ${offers[game.id] === undefined ? 'skeleton-loader': ''}`} >
+  {offers[game.id] === undefined ? (
+    <span className="invisible lg:px-[13px] px-[11px] py-[3px] lg:py-[8px]"> </span>
+  ) : (
+    `${offers[game.id]} Offers`
+  )}
+</p>
+
                     <p className="text-center lg:text-[20px] font-bold absolute bottom-3">{game.brand.name}</p>
                   </div>
                 ))) 

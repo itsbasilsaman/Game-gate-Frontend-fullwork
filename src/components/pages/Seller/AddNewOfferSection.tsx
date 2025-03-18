@@ -81,19 +81,24 @@ const AddNewOfferSection = () => {
   }, []);
 
   const handleServiceClick = async (service: Service) => {
+    console.log('Clicked Service', service); 
     setSelectedServiceId(service.id);
     setSelectedService(service);
+    console.log('selectedService',selectedService);
+    console.log('SelectedServiceId',SelectedServiceId);
   
     if (service.subservices && service.subservices.length > 0) {
       setSelectedSubServiceId("");
       setSelectedSubServiceName("");
-      setSubServiceDropdownOpen(true);
+      setSubServiceDropdownOpen(false);
       setBrandDropdownOpen(false);
     } else {
       setSelectedSubServiceId("");
       setSubServiceDropdownOpen(false);
       try {
         const response = await dispatch(GetBrandsBySubServiceOrService({ serviceId:  service.id, subServiceId: SelectedSubServiceId }));
+        console.log('GetBrandsBySubServiceOrService  1',response.payload);
+        
         setBrands(response.payload);
         setBrandDropdownOpen(true);
       } catch (error) {
@@ -106,12 +111,20 @@ const AddNewOfferSection = () => {
     setSelectedSubServiceId(subservice.id);
     setSelectedSubServiceName(subservice.name);
     setSubServiceDropdownOpen(false);
+    console.log('SelectedSubServiceName',SelectedSubServiceName);
+    console.log('setSelectedSubService ---',subservice.id);
+    
+  
+    console.log('SelectedServiceId',SelectedServiceId   ,"SelectedSubServiceId",SelectedSubServiceId);
+    
   
     try {
       // Ensure the correct parameters are passed
-      const response = await dispatch(GetBrandsBySubServiceOrService({ serviceId: SelectedServiceId, subServiceId: SelectedSubServiceId}));
+      const response = await dispatch(GetBrandsBySubServiceOrService({ serviceId: SelectedServiceId, subServiceId: subservice.id }));
+      console.log('GetBrandsBySubServiceOrService   2',response.payload);
+      
       setBrands(response.payload);
-      setBrandDropdownOpen(true);
+      // setBrandDropdownOpen(true);
     } catch (error) {
       console.log("Error fetching brands:", error);
     }

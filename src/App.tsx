@@ -113,7 +113,9 @@ export const App: React.FC = React.memo(() => {
           <Route path="/profile" element={<Profile />} />
           <Route
             path="/user/signup"
-            element={isLoggedUser ? <Navigate to="/" /> : <UserRegister />}
+            element={
+              // isLoggedUser ? <Navigate to="/" /> :
+               <UserRegister />}
           /> 
           <Route
             path="/user/changePassword"

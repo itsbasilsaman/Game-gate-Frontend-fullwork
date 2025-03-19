@@ -15,7 +15,6 @@ interface Country {
   flag: string;
 }
 
- 
 const UserLogin: React.FC = React.memo(() => {
   const [inputValue, setInputValue] = useState<string>("");
   const [countryCode, setCountryCode] = useState<string>("+966");
@@ -27,22 +26,15 @@ const UserLogin: React.FC = React.memo(() => {
   const { loading } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
- 
+
   const handleInputChange = (value: string) => {
-    setInputValue(value);
-    
-    // Check if the input value contains any uppercase letters
-    const hasUppercase = /[A-Z]/.test(value);
-  
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.toLowerCase())) {
-      if (hasUppercase) {
-        setErrors({ input: "Email must be in lowercase" });
-        setInputType(null);
-      } else {
-        setInputType("email");
-        setErrors({});
-      }
-    } else if (/^\d+$/.test(value)) {
+    const trimmedValue = value.trim();
+    setInputValue(trimmedValue);
+
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue.toLowerCase())) {
+      setInputType("email");
+      setErrors({});
+    } else if (/^\d+$/.test(trimmedValue)) {
       setInputType("phone");
       setErrors({});
     } else {
@@ -56,70 +48,68 @@ const UserLogin: React.FC = React.memo(() => {
     setShowDropdown(false);
   };
 
-
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
-    // Convert input value to lowercase if it's an email
-    const lowerCaseInputValue = inputType === "email" ? inputValue.toLowerCase() : inputValue;
-  
-    if (!lowerCaseInputValue) {
-      setErrors({ input: "This field is required" });
+
+    const trimmedInputValue = inputValue.trim();
+    if (!trimmedInputValue) {
+      setErrors({ input: inputType === "email" ? "Email is required" : "Phone is required" });
       return;
     }
-  
+
     if (inputType === "email") {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lowerCaseInputValue)) {
-        setErrors({ input: "Please enter a valid email address" });
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedInputValue.toLowerCase())) {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid Email",
+          text: "Please enter a valid email address (e.g., example@gmail.com).",
+          confirmButtonColor: "#3085d6",
+          confirmButtonText: "OK",
+          customClass: {
+            popup: "rounded-lg shadow-lg",
+            title: "text-xl font-bold",
+            confirmButton: "px-4 py-2 rounded-lg",
+          },
+        });
         return;
       }
     } else if (inputType === "phone") {
-      if (!lowerCaseInputValue || !/^\d+$/.test(lowerCaseInputValue)) {
-        setErrors({ input: "Please enter a valid phone number" });
+      if (!/^\d+$/.test(trimmedInputValue)) {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid Phone Number",
+          text: "Please enter a valid phone number.",
+          confirmButtonColor: "#3085d6",
+          confirmButtonText: "OK",
+          customClass: {
+            popup: "rounded-lg shadow-lg",
+            title: "text-xl font-bold",
+            confirmButton: "px-4 py-2 rounded-lg",
+          },
+        });
         return;
       }
     }
     setErrors({});
-  
+
     try {
       const payload = {
-        contact: inputType === "phone" ? `${countryCode}${lowerCaseInputValue}` : lowerCaseInputValue,
+        contact: inputType === "phone" ? `${countryCode}${trimmedInputValue}` : trimmedInputValue,
         type: inputType === "phone" ? "PHONE" : "EMAIL",
       };
-  
+
       const Type = payload.type;
-      console.log("Payload :", payload, lowerCaseInputValue);
-  
+      console.log("Payload :", payload, trimmedInputValue);
+
       const response = await dispatch(loginUser(payload)).unwrap();
       toast.success(response.message);
-  
-      navigate(`/user/verification?inputValue=${encodeURIComponent(lowerCaseInputValue)}&type=${Type}`);
+
+      navigate(`/user/verification?inputValue=${encodeURIComponent(trimmedInputValue)}&type=${Type}`);
     } catch (error) {
       console.error("Login failed:", error);
       const errorMessage = (error instanceof Error) ? error.message : String(error);
-      Swal.fire({
-        icon: "error",
-        title: "Error!",
-        text: errorMessage,
-        timer: 3000,
-        toast: true,
-        showConfirmButton: false,
-        timerProgressBar: true,
-        background: '#fff',
-        color: '#721c24',
-        iconColor: '#f44336',
-        didOpen: (toast) => {
-          toast.addEventListener('mouseenter', Swal.stopTimer);
-          toast.addEventListener('mouseleave', Swal.resumeTimer);
-        },
-        showClass: {
-          popup: 'animate__animated animate__fadeInDown'
-        },
-        hideClass: {
-          popup: 'animate__animated animate__fadeOutUp'
-        }
-      });
+      Swal.fire({ text: errorMessage, confirmButtonColor: "#040635", confirmButtonText: "OK", showClass: { popup: "animate__animated animate__fadeInDown" }, hideClass: { popup: "animate__animated animate__fadeOutUp" }, customClass: { popup: "rounded-lg shadow-xl p-6", title: "text-xl font-bold", confirmButton: "px-5 py-2 bg-blue-600 hover:bg-blue-700 transition-all duration-300" } });
+
     }
   };
 
@@ -127,22 +117,17 @@ const UserLogin: React.FC = React.memo(() => {
     country.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Find the selected country's flag
   const selectedCountry = countries.find(
     (country) => country.callingCodes[0] === countryCode.replace('+', '')
   );
-
   useEffect(() => {
     fetch("https://restcountries.com/v2/all?fields=name,callingCodes,flag")
       .then((response) => response.json())
       .then((data: Country[]) => setCountries(data))
-     
-      
       .catch((error) => console.error("Error fetching countries:", error));
   }, []);
- 
 
-  const isLoginButtonDisabled = !inputValue || !!errors.input || !inputType;
+  // const isLoginButtonDisabled = !inputValue || !!errors.input || !inputType;
 
   return (
     <div className="md:h-[100vh] h-full grid grid-rows-5 bg-white">
@@ -246,7 +231,7 @@ const UserLogin: React.FC = React.memo(() => {
                     type="submit"
                     className="w-full px-6 py-3 rounded-[6px] primary-background text-white font-semibold transform transition order-1 sm:order-2"
                     style={{ fontFamily: "Unbounded" }}
-                    disabled={isLoginButtonDisabled ||loading }
+                 
                   >
                     {loading ? "Sending OTP..." : "Login"}
                   </button>

@@ -1,13 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
+// UserRegister.tsx
+
+import React, { useEffect, useState, useRef } from "react";
 import { useFormik } from "formik";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 import { SignupUser } from "../../../reduxKit/actions/auth/authAction";
-import { formikValidationSchema } from "../../../validation/user/userSignupValidationSchema";
 import { AppDispatch, RootState } from "../../../reduxKit/store";
+import {
+  validateFirstName,
+  validateLastName,
+  validateUsername,
+  validateEmail,
+  validatePhone,
+  validateCountry,
+  validateGender,
+} from "../../.././validation/user/userSignUpValidation"; // Import validation functions
 
 export interface SignupFormValues {
   firstName: string;
@@ -19,7 +29,6 @@ export interface SignupFormValues {
   email: string;
   gender: string;
 }
-
 
 export interface Country {
   name: string;
@@ -35,7 +44,7 @@ const UserRegister: React.FC = () => {
   const [showPhoneCodeDropdown, setShowPhoneCodeDropdown] = useState<boolean>(false);
   const [searchCountryQuery, setSearchCountryQuery] = useState<string>("");
   const [searchPhoneCodeQuery, setSearchPhoneCodeQuery] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Loader state
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const { loading } = useSelector((state: RootState) => state.auth);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -46,56 +55,75 @@ const UserRegister: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
+  const phoneCodeDropdownRef = useRef<HTMLDivElement>(null);
 
   // Formik setup
-const formik = useFormik<SignupFormValues>({
-  initialValues: {
-    firstName: "",
-    lastName: "",
-    fcmToken: "fcm",
-    phone: type === "PHONE" ? inputValue : "",
-    country: "",
-    userName: "",
-    email: type === "EMAIL" ? inputValue : "",
-    gender: "",
-  },
-  validationSchema: formikValidationSchema, // Use the adapted schema here
-  onSubmit: async (values: SignupFormValues) => {
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        ...values,
-        phone: `${countryCode}${values.phone}`,
+  const formik = useFormik<SignupFormValues>({
+    initialValues: {
+      firstName: "",
+      lastName: "",
+      fcmToken: "fcm",
+      phone: type === "PHONE" ? inputValue : "",
+      country: "",
+      userName: "",
+      email: type === "EMAIL" ? inputValue : "",
+      gender: "",
+    },
+    onSubmit: async (values: SignupFormValues) => {
+      // Validate all fields
+      const errors = {
+        firstName: validateFirstName(values.firstName),
+        lastName: validateLastName(values.lastName),
+        userName: validateUsername(values.userName),
+        email: validateEmail(values.email),
+        phone: validatePhone(values.phone),
+        country: validateCountry(values.country),
+        gender: validateGender(values.gender),
       };
-      const response = await dispatch(SignupUser(payload)).unwrap();
-      if (response.success) {
-        toast.success(response.message);
-        await navigate("/");
+
+      // Check if there are any errors
+      if (Object.values(errors).some((error) => error !== null)) {
+        // Set errors in formik
+        formik.setErrors(errors as any);
+        return;
       }
-    } catch (error: any) {
-      Swal.fire({
-        icon: "error",
-        title: "Error!",
-        text: error.message,
-        timer: 3000,
-        toast: true,
-        showConfirmButton: false,
-        timerProgressBar: true,
-        background: "#fff",
-        color: "#721c24",
-        iconColor: "#f44336",
-        didOpen: (toast) => {
-          toast.addEventListener("mouseenter", Swal.stopTimer);
-          toast.addEventListener("mouseleave", Swal.resumeTimer);
-        },
-        showClass: { popup: "animate__animated animate__fadeInDown" },
-        hideClass: { popup: "animate__animated animate__fadeOutUp" },
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  },
-});
+
+      setIsSubmitting(true);
+      try {
+        const payload = {
+          ...values,
+          phone: `${countryCode}${values.phone}`,
+        };
+        const response = await dispatch(SignupUser(payload)).unwrap();
+        if (response.success) {
+          toast.success(response.message);
+          await navigate("/");
+        }
+      } catch (error: any) {
+        Swal.fire({
+          icon: "error",
+          title: "Error!",
+          text: error.message,
+          timer: 3000,
+          toast: true,
+          showConfirmButton: false,
+          timerProgressBar: true,
+          background: "#fff",
+          color: "#721c24",
+          iconColor: "#f44336",
+          didOpen: (toast) => {
+            toast.addEventListener("mouseenter", Swal.stopTimer);
+            toast.addEventListener("mouseleave", Swal.resumeTimer);
+          },
+          showClass: { popup: "animate__animated animate__fadeInDown" },
+          hideClass: { popup: "animate__animated animate__fadeOutUp" },
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+  });
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter") {
@@ -126,16 +154,32 @@ const formik = useFormik<SignupFormValues>({
   );
 
   useEffect(() => {
-    setIsLoading(true); // Show loader while fetching data
+    const handleClickOutside = (event: MouseEvent) => {
+      if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target as Node)) {
+        setShowCountryDropdown(false);
+      }
+      if (phoneCodeDropdownRef.current && !phoneCodeDropdownRef.current.contains(event.target as Node)) {
+        setShowPhoneCodeDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    setIsLoading(true);
     fetch("https://restcountries.com/v2/all?fields=name,callingCodes,flag")
       .then((response) => response.json())
       .then((data: Country[]) => {
         setCountries(data);
-        setIsLoading(false); // Hide loader after data is fetched
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching countries:", error);
-        setIsLoading(false); // Hide loader if there's an error
+        setIsLoading(false);
       });
   }, []);
 
@@ -172,7 +216,7 @@ const formik = useFormik<SignupFormValues>({
                 />
                 {formik.touched[field.name as keyof SignupFormValues] &&
                   formik.errors[field.name as keyof SignupFormValues] && (
-                    <p className="text-[14px] text-red-400 mt-1">
+                    <p className="text-[14px] text-red-700 mt-1">
                       {formik.errors[field.name as keyof SignupFormValues]}
                     </p>
                   )}
@@ -184,7 +228,7 @@ const formik = useFormik<SignupFormValues>({
               <label htmlFor="country" className="block text-sm font-medium primary-text">
                 Country
               </label>
-              <div className="relative">
+              <div className="relative" ref={countryDropdownRef}>
                 <button
                   type="button"
                   onClick={() => setShowCountryDropdown(!showCountryDropdown)}
@@ -294,7 +338,7 @@ const formik = useFormik<SignupFormValues>({
                 Phone Number
               </label>
               <div className="flex items-center border border-gray-300 rounded-[6px]">
-                <div className="relative">
+                <div className="relative" ref={phoneCodeDropdownRef}>
                   <button
                     type="button"
                     onClick={() => setShowPhoneCodeDropdown(!showPhoneCodeDropdown)}

@@ -65,6 +65,8 @@ const UserLogin: React.FC = React.memo(() => {
           text: "Please enter a valid email address (e.g., example@gmail.com).",
           confirmButtonColor: "#3085d6",
           confirmButtonText: "OK",
+
+          
           customClass: {
             popup: "rounded-lg shadow-lg",
             title: "text-xl font-bold",

@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";  
 import { Navbar } from "../user/Navbar";
 import Footer from "../user/Footer";
-import { IoListCircleSharp } from "react-icons/io5";
+import { FaBoxArchive } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 
 
@@ -97,7 +97,7 @@ const AddNewOfferSection = () => {
       setSubServiceDropdownOpen(false);
       try {
         const response = await dispatch(GetBrandsBySubServiceOrService({ serviceId:  service.id, subServiceId: SelectedSubServiceId }));
-        console.log('GetBrandsBySubServiceOrService  1',response.payload);
+        console.log('GetBrandsBySubServiceOrService ',response.payload);
         
         setBrands(response.payload);
         setBrandDropdownOpen(true);
@@ -111,8 +111,7 @@ const AddNewOfferSection = () => {
     setSelectedSubServiceId(subservice.id);
     setSelectedSubServiceName(subservice.name);
     setSubServiceDropdownOpen(false);
-    console.log('SelectedSubServiceName',SelectedSubServiceName);
-    console.log('setSelectedSubService ---',subservice.id);
+    
     
   
     console.log('SelectedServiceId',SelectedServiceId   ,"SelectedSubServiceId",SelectedSubServiceId);
@@ -121,7 +120,7 @@ const AddNewOfferSection = () => {
     try {
       // Ensure the correct parameters are passed
       const response = await dispatch(GetBrandsBySubServiceOrService({ serviceId: SelectedServiceId, subServiceId: subservice.id }));
-      console.log('GetBrandsBySubServiceOrService   2',response.payload);
+      console.log('GetBrandsBySubServiceOrService ',response.payload);
       
       setBrands(response.payload);
       // setBrandDropdownOpen(true);
@@ -205,7 +204,7 @@ const AddNewOfferSection = () => {
         <div className="w-full lg:w-3/4 bg-white p-4 sm:p-6 rounded-lg shadow-md order-2 lg:order-1">
         <div className="w-full flex justify-between items-center">
             <h2 className="text-xl sm:text-2xl font-semibold mb-4" style={{ fontFamily: "Unbounded" }}>Add new offer</h2>
-            <Link to={'/seller/offer'}><button className="primary-background font-medium px-3 py-3 text-white flex justify-center items-center gap-2 "><IoListCircleSharp className="text-[22px]" /> Offer List</button></Link>
+            <Link to={'/seller/offer'}><button className="primary-background font-medium rounded-lg px-3 py-3 text-white flex justify-center items-center gap-2 "><FaBoxArchive /> Offer List</button></Link>
         </div>
           <h3 className="text-lg sm:text-xl font-medium mb-2 lato-font">Type of service</h3>
           <p className="text-gray-600 mb-4 lato-font">Select a product or service you want to sell</p>

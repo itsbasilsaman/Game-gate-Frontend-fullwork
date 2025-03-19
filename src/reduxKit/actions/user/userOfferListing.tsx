@@ -6,9 +6,9 @@ import { configWithToken,axiosIn } from "../../../config/constants";
   
 export const GetBrandsWithService = createAsyncThunk(
     "user/GetBrandsWithService",
-    async (ServiceId:string, { rejectWithValue }) => {
+    async ({ServiceId, SubserviceId , page , limit}:{ServiceId: string;  SubserviceId:string; page: number; limit: number}, { rejectWithValue }) => {
       try {
-        const response = await axiosIn.get(`/user/offer-listing/products?page=1&limit=10&search&serviceId=${ServiceId}&subServiceId`,configWithToken());
+        const response = await axiosIn.get(`/user/offer-listing/products?page=${page}&limit=${limit}&search&serviceId=${ServiceId}&subServiceId=${SubserviceId}`,configWithToken());
        console.log("response GetBrandsWithService ", response.data);
         return response.data; 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,14 +32,25 @@ export const GetBrandsWithService = createAsyncThunk(
     };
   }
 
-export const GetOffersByBrand = createAsyncThunk(
+  export const GetOffersByBrand = createAsyncThunk(
     "user/GetOffersByBrand",
-    async (productId:string, { rejectWithValue }) => {
+    async (
+      { productId, deliveryMethod }: { productId: string; deliveryMethod?: string }, 
+      { rejectWithValue }
+    ) => {
       try {
-        const response = await axiosIn.get(`/user/offer-listing/products/offers?productId=${productId}&deliveryTypes=EMAIL`,configWithToken());
-
-        return response; 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // Construct query parameters dynamically
+        const queryParams = new URLSearchParams({ productId });
+        if (deliveryMethod) {
+          queryParams.append("deliveryType", deliveryMethod); // Fixed parameter name
+        }
+  
+        const response = await axiosIn.get(
+          `/user/offer-listing/products/offers?${queryParams.toString()}`,
+          configWithToken()
+        );
+  
+        return response;
       } catch (error: any) {
         if (error.response && error.response.data) {
           return rejectWithValue(error.response.data);
@@ -49,6 +60,7 @@ export const GetOffersByBrand = createAsyncThunk(
       }
     }
   );
+  
   
 export const GetOffersDetail = createAsyncThunk(
     "user/GetOffersDetail",

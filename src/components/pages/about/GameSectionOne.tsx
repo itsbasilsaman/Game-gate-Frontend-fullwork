@@ -42,9 +42,9 @@ const GameSectionOne: React.FC<GameSectionOneProps> = React.memo(({ productId, i
   const [openIndex, setOpenIndex] = useState<null | number>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [deliveryMethod, setDeliveryMethods] = useState<string[]>([]);
-  const [filteredOffers, setFilteredOffers] = useState<any[]>([]);
+  // const [filteredOffers, setFilteredOffers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState<string>("Delivery Method");
+  const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState<string>("");
 
   const handleOutsideClick = (event: { target: any; }) => {
     if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -56,18 +56,24 @@ const GameSectionOne: React.FC<GameSectionOneProps> = React.memo(({ productId, i
     setOpenIndex((prevIndex) => (prevIndex === index ? null : index));
   };
 
-  const handleItemClick = (item: any) => {
-    const matchingOffers = offers?.filter(
-      (offerItem) =>
-        Array.isArray(offerItem.deliveryMethods) &&
-        offerItem.deliveryMethods.includes(item)
-    );
+  // const handleItemClick = (item: any) => {
+  //   const matchingOffers = offers?.filter(
+  //     (offerItem) =>
+  //       Array.isArray(offerItem.deliveryMethods) &&
+  //       offerItem.deliveryMethods.includes(item)
+  //   );
 
-    console.log("Matching Offers:", matchingOffers);
-    setFilteredOffers(matchingOffers);
+  //   console.log("Matching Offers:", matchingOffers);
+  //   setFilteredOffers(matchingOffers);
+  //   setOpenIndex(null);
+  //   setSelectedDeliveryMethod(item); // Update the button text
+  // };
+
+  const handleItemClick = (item: string) => {
+    console.log(item);
     setOpenIndex(null);
-    setSelectedDeliveryMethod(item); // Update the button text
-  };
+    setSelectedDeliveryMethod(item);
+  }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     setSelectedOption(event.target.value);
@@ -88,7 +94,7 @@ const GameSectionOne: React.FC<GameSectionOneProps> = React.memo(({ productId, i
         console.log(productId);
         setLoading(true);
         if (productId) {
-          const response = await dispatch(GetOffersByBrand(productId));
+          const response = await dispatch(GetOffersByBrand({productId,deliveryMethod:selectedDeliveryMethod }));
           const data = response.payload as { data: { data: any } };
           console.log("response of the GetOffersByBrand ", data.data.data.data);
           const result = data.data.data.data.offers;
@@ -127,7 +133,7 @@ const GameSectionOne: React.FC<GameSectionOneProps> = React.memo(({ productId, i
       }
     };
     GetOffersByProduct();
-  }, [dispatch, productId]);
+  }, [dispatch, productId,selectedDeliveryMethod]);
 
   const handleOfferDetails = async (id: string) => {
     try {
@@ -140,9 +146,9 @@ const GameSectionOne: React.FC<GameSectionOneProps> = React.memo(({ productId, i
     }
   };
 
-  const displayedOffers = filteredOffers.length > 0 ? filteredOffers : offers;
+  // const displayedOffers = filteredOffers.length > 0 ? filteredOffers : offers;
 
-  const filteredOffersBySearch = displayedOffers.filter((offer) =>
+  const filteredOffersBySearch = offers.filter((offer) =>
     offer.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -182,7 +188,7 @@ const GameSectionOne: React.FC<GameSectionOneProps> = React.memo(({ productId, i
                     onClick={() => toggleDropdown(0)}
                     className="blur-button flex items-center justify-between w-full px-[19px] py-[9px] pr-[35px] lg:text-[17px] rounded-[1000px] hover:bg-grayShade transition-all duration-200"
                   >
-                    {selectedDeliveryMethod}
+                    {selectedDeliveryMethod == "" ? 'Delivery Method' : selectedDeliveryMethod }
                     <ChevronDown className="absolute right-3 w-5 h-5" />
                   </button>
 

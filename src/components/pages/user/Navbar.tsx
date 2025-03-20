@@ -210,8 +210,8 @@ if(profile){console.log(" ", profile.sellerProfile?.verificationStatus );
           </div>
         </Link>
         <div className="lg:relative w-full lg:mx-[30px] lg:px-0">
-          <div ref={searchRef} className="lg:relative w-full">
-            <div className="flex items-center rounded-full header-input-section shadow-md p-2 transition-all duration-300 ease-in-out w-full">
+          <div ref={searchRef} className="w-full lg:relative">
+            <div className="flex items-center w-full p-2 transition-all duration-300 ease-in-out rounded-full shadow-md header-input-section">
               <input
                 type="text"
                 placeholder={placeholder}
@@ -234,7 +234,7 @@ if(profile){console.log(" ", profile.sellerProfile?.verificationStatus );
               >
                 <div>
                   <h3
-                    className="text-lg text-center font-semibold mb-6 primary-color"
+                    className="mb-6 text-lg font-semibold text-center primary-color"
                     style={{ fontFamily: "Unbounded" }}
                   >
                     Search in service
@@ -246,14 +246,14 @@ if(profile){console.log(" ", profile.sellerProfile?.verificationStatus );
                         onClick={() => {
                           handleServiceNested(item);
                         }}
-                        className="flex flex-col items-center cursor-pointer dropdown-box py-3 rounded-lg"
+                        className="flex flex-col items-center py-3 rounded-lg cursor-pointer dropdown-box"
                       >
                         <img
                           src={item.iconUrl}
                           alt=""
                           className="w-[60px] h-[60px]"
                         />
-                        <p className="mt-2 text-sm primary-color font-medium">
+                        <p className="mt-2 text-sm font-medium primary-color">
                           {item.name}
                         </p>
                       </div>
@@ -322,7 +322,7 @@ if(profile){console.log(" ", profile.sellerProfile?.verificationStatus );
           className={`w-[27px] h-[27px] lg:hidden block flex justify-center items-center transition-all duration-300 ease-in-out`}
           onClick={togglePanel}
         >
-          <HiMiniBars3 className="text-[29px]" />
+          <HiMiniBars3 className="text-[29px] cursor-pointer" />
         </div>
       </div>
 
@@ -414,7 +414,7 @@ if(profile){console.log(" ", profile.sellerProfile?.verificationStatus );
                 <option value="Saudi Riyal (SAR)">Saudi Riyal (SAR)</option>
               </select>
               {showWarning && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="mt-1 text-sm text-red-500">
                   Please select a currency.
                 </p>
               )}
@@ -434,7 +434,7 @@ if(profile){console.log(" ", profile.sellerProfile?.verificationStatus );
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-t-transparent border-black rounded-full animate-spin"></div>
+                  <div className="w-4 h-4 border-2 border-black rounded-full border-t-transparent animate-spin"></div>
                   Saving...
                 </div>
               ) : (
@@ -448,7 +448,7 @@ if(profile){console.log(" ", profile.sellerProfile?.verificationStatus );
       {/* Mobile Panel */}
       {isPanelOpen && (
         <div
-          className="fixed inset-0 text-white z-50 flex flex-col shadow-lg animate-slide-in"
+          className="fixed inset-0 z-50 flex flex-col text-white shadow-lg animate-slide-in"
           style={{ backgroundColor: "#00002A" }}
         >
           <div className="flex items-center justify-between p-6 h-[80px] header-background">
@@ -456,13 +456,13 @@ if(profile){console.log(" ", profile.sellerProfile?.verificationStatus );
               <img src={Logo} alt="" className="w-[55px]" />
               <h2 className="text-[22px] font-semibold">GATE</h2>
             </div>
-            <IoMdClose onClick={togglePanel} className="text-[26px]" />
+            <IoMdClose onClick={togglePanel} className="text-[26px] cursor-pointer" />
           </div>
 
           <div className="p-[25px] space-y-6">
             {isLoggedUserWithSeller && isLoggedUser ? (
-              <div className="flex justify-center items-center flex-col">
-                <ToggleProfile />
+              <div className="flex flex-col items-center justify-center">
+                <ToggleProfile togglePanel={togglePanel} />
                 <div>
                   <Link to={"/user/selectDetailsOffer"}>
                     <span className="text-[20px] w-full font-semibold country-button px-[24px] py-[15px] rounded-full">
@@ -474,8 +474,8 @@ if(profile){console.log(" ", profile.sellerProfile?.verificationStatus );
             ) : (
               <div>
                 {isLoggedUser && isLoggedUserWithSeller === false ? (
-                  <div className="flex justify-center items-center flex-col">
-                    <ToggleProfile />
+                  <div className="flex flex-col items-center justify-center">
+                    <ToggleProfile togglePanel={togglePanel} />
                     <div className="">
                       <Link to={"/user/seller"}>
                         <span className="text-[20px] w-full font-semibold country-button px-[24px] py-[12px] rounded-full">
@@ -485,7 +485,7 @@ if(profile){console.log(" ", profile.sellerProfile?.verificationStatus );
                     </div>
                   </div>
                 ) : (
-                  <div className="flex w-full justify-center items-center">
+                  <div className="flex items-center justify-center w-full">
                     <Link to={"/user/login"}>
                       <button className="px-[30px] py-[13px] login-signup-button rounded-[1000px] text-[19px]">
                         Login / Signup

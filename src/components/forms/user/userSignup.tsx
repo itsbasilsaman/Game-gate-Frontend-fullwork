@@ -36,6 +36,12 @@ export interface Country {
   flag: string;
 }
 
+const genderOptions = [
+  { value: "MALE", label: "Male" },
+  { value: "FEMALE", label: "Female" },
+  { value: "OTHER", label: "Other" },
+];
+
 const UserRegister: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [countries, setCountries] = useState<Country[]>([]);
@@ -45,6 +51,8 @@ const UserRegister: React.FC = () => {
   const [searchCountryQuery, setSearchCountryQuery] = useState<string>("");
   const [searchPhoneCodeQuery, setSearchPhoneCodeQuery] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const { loading } = useSelector((state: RootState) => state.auth);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -101,10 +109,10 @@ const UserRegister: React.FC = () => {
           await navigate("/");
         }
       } catch (error: any) {
+        console.log('Error',error);
         Swal.fire({
-          icon: "error",
-          title: "Error!",
-          text: error.message,
+          icon: "error",      
+          text: error === "Please Verify OTP" ? error : error.message,
           timer: 3000,
           toast: true,
           showConfirmButton: false,
@@ -124,6 +132,10 @@ const UserRegister: React.FC = () => {
       }
     },
   });
+
+  const selectedGender = genderOptions.find(
+    (option) => option.value === formik.values.gender
+  );
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter") {
@@ -184,17 +196,17 @@ const UserRegister: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex items-center justify-center min-h-screen user-background py-8 px-4 sm:px-6 lg:px-8">
-      <div className="relative z-10 bg-white px-8 py-10 rounded-[24px] w-full max-w-lg md:max-w-3xl lg:max-w-4xl">
+    <div className="flex items-center justify-center min-h-screen px-4 py-8 user-background sm:px-4 lg:px-8">
+      <div className="relative z-10 bg-white px-5 py-7 lg:px-8 lg:py-10 rounded-[24px] w-full max-w-lg md:max-w-3xl lg:max-w-4xl">
         <h2
-          className="text-3xl font-bold text-center primary-color mb-6 py-3"
+          className="py-3 mb-6 text-3xl font-bold text-center primary-color"
           style={{ fontFamily: "Unbounded" }}
         >
           SignUp Account
         </h2>
 
         <form onSubmit={formik.handleSubmit} onKeyDown={handleKeyDown} className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             {[
               { name: "firstName", label: "First Name", placeholder: "Your First Name" },
               { name: "lastName", label: "Last Name", placeholder: "Your Last Name" },
@@ -237,7 +249,7 @@ const UserRegister: React.FC = () => {
                   {formik.values.country || "Select Country"}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -257,17 +269,17 @@ const UserRegister: React.FC = () => {
                       onChange={(e) => setSearchCountryQuery(e.target.value)}
                       className="w-full px-3 py-2 text-lg border-b border-gray-300 focus:outline-none"
                     />
-                    <div className="max-h-48 overflow-y-auto">
+                    <div className="overflow-y-auto max-h-48">
                       {isLoading ? (
                         <div className="flex items-center justify-center p-3">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-900"></div>
+                          <div className="w-5 h-5 border-b-2 border-gray-900 rounded-full animate-spin"></div>
                         </div>
                       ) : (
                         filteredCountries.map((country) => (
                           <div
                             key={country.name}
                             onClick={() => handleCountrySelect(country.name)}
-                            className="px-3 py-2 text-lg hover:bg-gray-100 cursor-pointer flex items-center"
+                            className="flex items-center px-3 py-2 text-lg cursor-pointer hover:bg-gray-100"
                           >
                             <img src={country.flag} alt="flag" className="w-5 h-5 mr-2" />
                             {country.name}
@@ -278,34 +290,58 @@ const UserRegister: React.FC = () => {
                   </div>
                 )}
                 {formik.touched.country && formik.errors.country && (
-                  <p className="text-sm text-red-800 mt-1">{formik.errors.country}</p>
+                  <p className="mt-1 text-sm text-red-800">{formik.errors.country}</p>
                 )}
               </div>
             </div>
           </div>
 
           {/* Gender Selector */}
-          <div>
-            <label htmlFor="gender" className="block text-sm font-medium primary-text">
-              Gender
-            </label>
-            <select
-              id="gender"
-              name="gender"
-              value={formik.values.gender}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              className="w-full px-3 py-3 border rounded-[3px] mt-[8px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-950"
+          <div className="relative">
+      <label htmlFor="gender" className="block text-sm font-medium primary-text">
+        Gender
+      </label>
+      <button
+        type="button"
+        className="w-full px-3 py-3 border rounded-[3px] mt-[8px] flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-950"
+        onClick={() => setShowDropdown(!showDropdown)}
+      >
+        {selectedGender ? selectedGender.label : "Select Gender"}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-5 h-5"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fillRule="evenodd"
+            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </button>
+      {showDropdown && (
+        <ul className="absolute z-10 w-full mt-[2px] bg-white border border-gray-300 shadow-lg">
+          {genderOptions.map((option) => (
+            <li
+              key={option.value}
+              className={`px-3 py-2 cursor-pointer hover:bg-blue-950 hover:text-white ${
+                formik.values.gender === option.value ? "bg-blue-900 text-white" : ""
+              }`}
+              onClick={() => {
+                formik.setFieldValue("gender", option.value);
+                setShowDropdown(false);
+              }}
             >
-              <option value="">Select Gender</option>
-              <option value="MALE">Male</option>
-              <option value="FEMALE">Female</option>
-              <option value="OTHER">Other</option>
-            </select>
-            {formik.touched.gender && formik.errors.gender && (
-              <p className="text-sm text-red-800 mt-1">{formik.errors.gender}</p>
-            )}
-          </div>
+              {option.label}
+            </li>
+          ))}
+        </ul>
+      )}
+      {formik.touched.gender && formik.errors.gender && (
+        <p className="mt-1 text-sm text-red-800">{formik.errors.gender}</p>
+      )}
+    </div>
 
           {/* Show email input only if type is PHONE */}
           {type === "PHONE" && (
@@ -342,7 +378,7 @@ const UserRegister: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPhoneCodeDropdown(!showPhoneCodeDropdown)}
-                    className="px-4 pr-9 py-2 text-lg border-r border-gray-300 focus:outline-none flex items-center"
+                    className="flex items-center px-4 py-2 text-lg border-r border-gray-300 pr-9 focus:outline-none"
                   >
                     {selectedCountry && (
                       <img
@@ -362,12 +398,12 @@ const UserRegister: React.FC = () => {
                         onChange={(e) => setSearchPhoneCodeQuery(e.target.value)}
                         className="w-full px-3 py-2 text-lg border-b border-gray-300 focus:outline-none"
                       />
-                      <div className="max-h-48 overflow-y-auto">
+                      <div className="overflow-y-auto max-h-48">
                         {filteredPhoneCodeCountries.map((country) => (
                           <div
                             key={country.name}
                             onClick={() => handleCountryCodeChange(`+${country.callingCodes[0]}`)}
-                            className="px-3 py-2 text-lg hover:bg-gray-100 cursor-pointer flex items-center"
+                            className="flex items-center px-3 py-2 text-lg cursor-pointer hover:bg-gray-100"
                           >
                             <img src={country.flag} alt="flag" className="w-5 h-5 mr-2" />
                             {country.name} (+{country.callingCodes[0]})

@@ -111,7 +111,7 @@ export const UserAvatar: React.FC = () => {
         <div   className="relative" ref={dropdownRef}>
           {/* Profile Button */}
           <div
-            className="relative text-black flex items-center justify-center cursor-pointer"
+            className="relative flex items-center justify-center text-black cursor-pointer"
             onClick={toggleSection}
           >
            { UserProfileData?.avatar ?
@@ -121,7 +121,7 @@ export const UserAvatar: React.FC = () => {
                <img 
                 src={UserProfileData.avatar instanceof File ? URL.createObjectURL(UserProfileData.avatar) : UserProfileData.avatar} 
                   alt="" 
-                className="w-full h-full rounded-full object-cover" 
+                className="object-cover w-full h-full rounded-full" 
 />
 
             </div>
@@ -130,7 +130,7 @@ export const UserAvatar: React.FC = () => {
             className={`w-[55px] h-[55px] bg-red-800 pb-[5px] profile-bar text-white rounded-full flex items-center justify-center text-2xl font-bold`}
           >
              {UserProfileData?.firstName ? UserProfileData.firstName.charAt(0).toUpperCase() : (
-              <div className="w-full h-full  shimmer rounded-full"></div>
+              <div className="w-full h-full rounded-full shimmer"></div>
              )}
           </div>
             
@@ -143,17 +143,17 @@ export const UserAvatar: React.FC = () => {
           {/* Toggle Section */}
           {isOpen && (
             <div className="absolute mt-2 right-0 py-4 text-black w-[370px]  header-dropdown rounded-lg shadow-md">
-              <div className="  rounded-lg  max-w-md mx-auto">
+              <div className="max-w-md mx-auto rounded-lg ">
                 {/* Header */}
                 <Link to={'/profile'}>
-                  <div className="flex items-center space-x-4 border-b pb-4 mb-4 px-4">
+                  <div className="flex items-center px-4 pb-4 mb-4 space-x-4 border-b">
                    {UserProfileData?.avatar ? <div
                       className={`w-12 h-12   rounded-full`}
                     >
                     <img 
                       src={UserProfileData.avatar instanceof File ? URL.createObjectURL(UserProfileData.avatar) : UserProfileData.avatar} 
                       alt="" 
-                      className="w-full h-full rounded-full object-cover" 
+                      className="object-cover w-full h-full rounded-full" 
 />
 
                     </div>
@@ -185,21 +185,21 @@ export const UserAvatar: React.FC = () => {
 
                 {/* Balances */}
                 <div className="space-y-4">
-                  <div className="flex justify-center items-center px-4">
+                  <div className="flex items-center justify-center px-4">
                       <span className="text-[20px] font-medium primary-color"   style={{ fontFamily: 'Unbounded' }}>
                         {UserProfileData?.firstName} {UserProfileData?.lastName}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center px-4">
-                      <div className="text-sm font-medium primary-color  flex flex-col">
+                    <div className="flex items-center justify-between px-4">
+                      <div className="flex flex-col text-sm font-medium primary-color">
                         <span>Followers </span>  <span className='text-center text-[25px] py-2'   style={{ fontFamily: 'Unbounded' }}>{UserProfileData?.followersCount}</span>
                       </div>
-                      <div className="text-sm font-medium primary-color flex flex-col">
+                      <div className="flex flex-col text-sm font-medium primary-color">
                         <span>Following</span>  <span className='text-center text-[25px] py-2'   style={{ fontFamily: 'Unbounded' }}>{UserProfileData?.folowingCount}</span>
                       </div>
                     </div>
                    
-                    <div className="flex justify-between items-center px-4">
+                    <div className="flex items-center justify-between px-4">
                       <span className="text-sm font-medium primary-color">
                         Member Since 
                       </span>
@@ -207,7 +207,7 @@ export const UserAvatar: React.FC = () => {
                       {formattedDate}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center px-4">
+                    <div className="flex items-center justify-between px-4">
                       <span className="text-sm font-medium primary-color">
                         Country 
                       </span>

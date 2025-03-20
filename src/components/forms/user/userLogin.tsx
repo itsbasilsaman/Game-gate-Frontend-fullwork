@@ -62,7 +62,7 @@ const UserLogin: React.FC = React.memo(() => {
         Swal.fire({
           icon: "error",
           title: "Invalid Email",
-          text: "Please enter a valid email address (e.g., example@gmail.com).",
+          text: "Please enter a valid email address.",
           confirmButtonColor: "#3085d6",
           confirmButtonText: "OK",
 
@@ -109,8 +109,24 @@ const UserLogin: React.FC = React.memo(() => {
       navigate(`/user/verification?inputValue=${encodeURIComponent(trimmedInputValue)}&type=${Type}`);
     } catch (error) {
       console.error("Login failed:", error);
-      const errorMessage = (error instanceof Error) ? error.message : String(error);
-      Swal.fire({ text: errorMessage, confirmButtonColor: "#040635", confirmButtonText: "OK", showClass: { popup: "animate__animated animate__fadeInDown" }, hideClass: { popup: "animate__animated animate__fadeOutUp" }, customClass: { popup: "rounded-lg shadow-xl p-6", title: "text-xl font-bold", confirmButton: "px-5 py-2 bg-blue-600 hover:bg-blue-700 transition-all duration-300" } });
+       
+      console.log('Error Message',(error as Error).message);
+      console.log('Error Phone message',(error as Error))
+      
+      Swal.fire({ 
+        text: inputType === "phone" ? String(error) : (error as Error).message, 
+        confirmButtonColor: "#040635", 
+        confirmButtonText: "OK", 
+        showClass: { popup: "animate__animated animate__fadeInDown" }, 
+        hideClass: { popup: "animate__animated animate__fadeOutUp" }, 
+        customClass: { 
+          popup: "rounded-lg shadow-xl p-6", 
+          title: "text-xl font-bold", 
+          confirmButton: "px-5 py-2 bg-blue-600 hover:bg-blue-700 transition-all duration-300" 
+        } 
+      });
+      
+      
 
     }
   };
@@ -134,12 +150,12 @@ const UserLogin: React.FC = React.memo(() => {
   return (
     <div className="md:h-[100vh] h-full grid grid-rows-5 bg-white">
       <div className="lg:row-span-2 primary-background relative h-[80px] px-2 lg:h-auto flex items-center">
-        <div className="flex pl-2 lg:pl-0 lg:justify-center items-center lg:absolute lg:top-16 lg:left-1/2 lg:-translate-x-1/2">
+        <div className="flex items-center pl-2 lg:pl-0 lg:justify-center lg:absolute lg:top-16 lg:left-1/2 lg:-translate-x-1/2">
           <img src={Logo} className="w-[80px] h-[60px] object-cover lg:block hidden" />
           <span className="lg:text-[24px]" style={{ fontFamily: "Unbounded", color: "white" }}>GAME GATE</span>
         </div>
       </div>
-      <div className="row-span-5 lg:bg-white flex items-center justify-center">
+      <div className="flex items-center justify-center row-span-5 lg:bg-white">
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-[530px] px-4 sm:px-6 py-12">
           <div className="relative z-10 flex flex-col affiliate-section rounded-[12px] items-center px-4 sm:px-8 pb-[65px] pt-12 w-full bg-white border-gray-300 border">
             <h2
@@ -163,7 +179,7 @@ const UserLogin: React.FC = React.memo(() => {
                       <button
                         type="button"
                         onClick={() => setShowDropdown(!showDropdown)}
-                        className="px-4 pr-9 py-2 text-lg border-r border-gray-300 focus:outline-none flex items-center"
+                        className="flex items-center px-4 py-2 text-lg border-r border-gray-300 pr-9 focus:outline-none"
                       >
                         {selectedCountry && (
                           <img
@@ -183,12 +199,12 @@ const UserLogin: React.FC = React.memo(() => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full px-3 py-2 text-lg border-b border-gray-300 focus:outline-none"
                           />
-                          <div className="max-h-48 overflow-y-auto">
+                          <div className="overflow-y-auto max-h-48">
                             {filteredCountries.map((country) => (
                               <div
                                 key={country.name}
                                 onClick={() => handleCountryCodeChange(`+${country.callingCodes[0]}`)}
-                                className="px-3 py-2 text-lg hover:bg-gray-100 cursor-pointer flex items-center"
+                                className="flex items-center px-3 py-2 text-lg cursor-pointer hover:bg-gray-100"
                               >
                                 <img src={country.flag} alt="flag" className="w-5 h-5 mr-2" />
                                 {country.name} (+{country.callingCodes[0]})
@@ -215,13 +231,13 @@ const UserLogin: React.FC = React.memo(() => {
                   />
                 </div>
                 {errors.input && (
-                  <div className="text-red-400 text-sm mt-1">{errors.input}</div>
+                  <div className="mt-1 text-sm text-red-400">{errors.input}</div>
                 )}
               </div>
 
-              <div className="text-center mt-4">
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Link to={'/'} className="w-full order-2 sm:order-1">
+              <div className="mt-4 text-center">
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Link to={'/'} className="order-2 w-full sm:order-1">
                     <button
                       className="w-full px-6 py-3 border border-gray-300 rounded-[6px] font-semibold transform transition"
                       style={{ fontFamily: "Unbounded" }}

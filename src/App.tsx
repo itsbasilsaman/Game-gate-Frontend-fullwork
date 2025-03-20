@@ -11,7 +11,7 @@ import { getUserProfile } from "./reduxKit/actions/user/userProfile";
 import {userLoggedAction, userLoggedWithSellerAction} from "./reduxKit/actions/auth/user-seller-main-auth";
 import NotFound404 from "./notFound404";
 import NotFound401 from "./notFound401";
-import ToggleProfile from "./components/pages/user/ToggleProfile";
+ 
 import SellerRegistrationForm from "./components/seller/forms/SellerRegistrationForm";
 import LanguageSection from "./components/Header/LanguageSection";
 import AddNewOfferSection from "./components/pages/Seller/AddNewOfferSection";
@@ -137,10 +137,7 @@ export const App: React.FC = React.memo(() => {
                 ( <Navigate to="/" /> )
             }
           />
-
-          {/* SELLER ROUTES */}
-          <Route path="/toggle" element={<ToggleProfile />} />
-
+ 
           <Route
             path="/user/sellerSignup"
             element={ isLoggedUser&&userSellerProfile===null ? <SellerRegistrationForm /> : <Navigate to="/" /> }

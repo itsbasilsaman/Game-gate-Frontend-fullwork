@@ -11,17 +11,16 @@ import { IVerifyOtp } from "../../../interfaces/user/userLoginInterfaces";
 import toast from "react-hot-toast";
 
 const EmailVerification: React.FC = () => {
-  
   const [Content, setContent] = useState<string | null>("");
   const [Type, setType] = useState<string | null>("");
   const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const { loading } = useSelector((state: RootState) => state.auth);
- 
+  const [timeLeft, setTimeLeft] = useState<number>(900); // 15 minutes in seconds
 
   const location = useLocation();
-  const queryParams = new URLSearchParams(location.search)
+  const queryParams = new URLSearchParams(location.search);
 
   const inputValue = queryParams.get("inputValue") || "";
   const type = queryParams.get("type") || "";
@@ -47,6 +46,23 @@ const EmailVerification: React.FC = () => {
     setType(type);
   }, [inputValue, type]);
 
+  // Countdown timer
+  useEffect(() => {
+    if (timeLeft === 0) return;
+
+    const intervalId = setInterval(() => {
+      setTimeLeft((prevTime) => prevTime - 1);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [timeLeft]);
+
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+
   // Handle backspace key
   const handleKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
@@ -61,7 +77,6 @@ const EmailVerification: React.FC = () => {
       prevInput?.focus();
     }
   };
-  
 
   // Handle paste event
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>): void => {
@@ -72,7 +87,6 @@ const EmailVerification: React.FC = () => {
     const newOtp = pasteData.split("").concat(otp.slice(pasteData.length));
     setOtp(newOtp.slice(0, otp.length));
 
-    
     // Automatically focus on the last filled input
     const lastFilledIndex = pasteData.length - 1;
     const nextInput = document.getElementById(
@@ -80,19 +94,17 @@ const EmailVerification: React.FC = () => {
     ) as HTMLInputElement;
     nextInput?.focus();
   };
-   
+
   // Resend OTP
   const handleResend = () => {
     if (!Content || !Type) {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Contact and Type are required fields!",
+        text: "Email and Type are required fields!",
       });
       return;
     }
- 
-    
 
     setOtp(["", "", "", "", "", ""]);
     const payload = {
@@ -100,8 +112,10 @@ const EmailVerification: React.FC = () => {
       type: Type,
     };
     dispatch(loginUser(payload));
-    toast.success("OTP Resend Successfully");
+    toast.success("OTP Resent Successfully");
+    setTimeLeft(900); // Reset the timer to 15 minutes
   };
+
   // Handle OTP submission
   const handleSubmit = async (): Promise<void> => {
     const otpCode = otp.join("");
@@ -130,10 +144,13 @@ const EmailVerification: React.FC = () => {
     }
   };
 
-
   const handleCancel = () => {
-    navigate("/user/login")
-  }
+    navigate("/user/login");
+  };
+
+  const handleGoToGmail = () => {
+    window.location.href = "https://mail.google.com"; // Directly open Gmail
+  };
 
   return (
     <div
@@ -145,20 +162,13 @@ const EmailVerification: React.FC = () => {
         backgroundPosition: "center",
       }}
     >
- 
       <div className="absolute inset-0 animate-pulse"></div>
- 
+
       <div className="absolute inset-0 adminlogin-background">
-        <div className="background-one relative inset-0 flex justify-center items-start pt-[60px]">
- 
-
- 
-
-        </div>
+        <div className="background-one relative inset-0 flex justify-center items-start pt-[60px]"></div>
         <div className="background-two bg-white"></div>
       </div>
 
-   
       <div className="relative z-10 flex flex-col bg-white items-center px-[28px] py-[45px] w-full max-w-md admin-login-box">
         <div className="flex flex-col items-center justify-center">
           <div className="w-full max-w-sm p-8 bg-white rounded-lg">
@@ -166,7 +176,7 @@ const EmailVerification: React.FC = () => {
               className="text-[23px] font-bold mb-6 text-center text-white animate-bouncetext-center"
               style={{ fontFamily: "Unbounded", color: "#24288E" }}
             >
-              Email OTP
+                OTP Verification
             </h2>
 
             <div className="flex justify-center space-x-2 mb-6">
@@ -179,36 +189,42 @@ const EmailVerification: React.FC = () => {
                   value={digit}
                   onChange={(e) => handleInputChange(e.target.value, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)}
-                  
                   onPaste={handlePaste}
                   className="w-10 h-10 text-center border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               ))}
             </div>
             <p className="mb-6 text-center text-sm text-gray-500">
-            Verify Your OTP Expires in  15 minutes {" "}
-                <br />
-                <button
-                  onClick={handleResend}
-                  className="text-blue-600 hover:underline"
-                >
-                  Resend
-                </button>
-              
+              <span className="py-2">
+                Verify Your Email OTP. Expires in {formatTime(timeLeft)}{" "}
+              </span>
+              <br />
+              <button
+                onClick={handleResend}
+                className="text-blue-900 font-medium no-underline hover:no-underline hover:bg-blue-900 hover:text-white px-4 py-2 m-2 rounded-full border border-blue-900 transition-all duration-300 ease-in-out"
+              >
+                Resend OTP
+              </button>
+              <button
+                onClick={handleGoToGmail}
+                className="text-blue-900 font-medium no-underline hover:no-underline hover:bg-blue-900 hover:text-white px-4 py-2 m-2 rounded-full border border-blue-900 transition-all duration-300 ease-in-out"
+              >
+                Open Gmail
+              </button>
             </p>
             <div className="flex justify-between">
               <button
-                className="px-4 py-2 font-semibold text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+                className="px-4 py-2 font-semibold text-white bg-blue-900 hover:bg-blue-950 rounded-full transition-all duration-300 ease-in-out"
                 onClick={handleCancel}
               >
                 Cancel
               </button>
               <button
                 disabled={otp.some((digit) => digit === "")}
-                className={`px-4 py-2 font-semibold text-white rounded ${
+                className={`px-4 py-2 font-semibold text-white rounded-full transition-all duration-300 ease-in-out ${
                   otp.some((digit) => digit === "")
                     ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-blue-500 hover:bg-blue-600"
+                    : "bg-blue-900 hover:bg-blue-950"
                 }`}
                 onClick={handleSubmit}
               >

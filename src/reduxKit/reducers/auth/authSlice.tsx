@@ -93,14 +93,12 @@ export const authSlice = createSlice({
 
       .addCase(verifiyOtpUser.pending, (state) => {
         console.log("the otp verifyng pending ");
-
         state.loading = true;
         state.error = null;
       })
 
       .addCase(verifiyOtpUser.fulfilled, (state, { payload }) => {
         console.log("User verify OTP payload:", payload);
-
         state.loading = false;
         state.error = null;
 
@@ -133,8 +131,7 @@ export const authSlice = createSlice({
           } else {
             console.warn("Access token is not provided in the response.");
             // Do not mark as logged in if tokens are missing
-            state.isLogged = false;
-       
+            state.isLogged = false; 
           }
         } else {
           console.warn("No data received in OTP verification response.");
@@ -145,7 +142,6 @@ export const authSlice = createSlice({
         state.userData = null;
         state.error = payload as string;
       })
-  
       .addCase(userLogout.pending, (state) => {
         state.loading = true;
         state.error = null;

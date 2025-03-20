@@ -1,12 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppDispatch, RootState } from '../../../reduxKit/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { SellerRegistrationAction } from '../../../reduxKit/actions/seller/seller';
 import { useFormik } from 'formik';
-import { z } from 'zod';
-import { toFormikValidationSchema } from 'zod-formik-adapter';  
-
 import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 
@@ -15,23 +13,45 @@ const SellerRegistrationForm: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { loading } = useSelector((state: RootState) => state.seller);
 
-  // Zod validation schema
-  const validationSchema = z.object({
-    address: z.string().min(1, 'Address is required'),
-    city: z.string().min(1, 'City is required'),
-    state: z.string().min(1, 'State is required'),
-    zip: z.string().regex(/^\d{6}$/, 'Pin code must be exactly 6 digits'),
-    dob: z.string().refine((value) => {
+  // Custom validation function
+  const validate = (values: any) => {
+    const errors: any = {};
+
+    if (!values.address) {
+      errors.address = 'Address is required';
+    }
+
+    if (!values.city) {
+      errors.city = 'City is required';
+    }
+
+    if (!values.state) {
+      errors.state = 'State is required';
+    }
+
+    if (!values.zip) {
+      errors.zip = 'Pin code is required';
+    } else if (!/^\d{6}$/.test(values.zip)) {
+      errors.zip = 'Pin code must be exactly 6 digits';
+    }
+
+    if (!values.dob) {
+      errors.dob = 'Date of Birth is required';
+    } else {
       const today = new Date();
-      const birthDate = new Date(value);
+      const birthDate = new Date(values.dob);
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
       if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
         age--;
       }
-      return age >= 18;
-    }, 'You must be at least 18 years old'),
-  });
+      if (age < 18) {
+        errors.dob = 'You must be at least 18 years old';
+      }
+    }
+
+    return errors;
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -42,7 +62,7 @@ const SellerRegistrationForm: React.FC = () => {
       zip: '',
       dob: '',
     },
-    validationSchema: toFormikValidationSchema(validationSchema), // Convert Zod schema to Formik-compatible schema
+    validate,
     onSubmit: async (values) => {
       try {
         const response = await dispatch(SellerRegistrationAction(values)).unwrap();

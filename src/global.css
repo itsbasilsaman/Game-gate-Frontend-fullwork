@@ -247,7 +247,7 @@ button {
 
 .offer-menu {
   border: 2px solid rgba(190, 190, 190, 0.553);
-  background-color: rgba(255, 255, 255, 0.368);
+  background-color: rgba(188, 188, 188, 0.329);
   color: rgb(255, 255, 255);
   position: absolute;
   top: 10px;
@@ -256,10 +256,24 @@ button {
   transition: all ease 0.5s;
   cursor: pointer;
 }
-.offer-menu:hover {
-  background-color: rgba(255, 255, 255, 0.715);
  
+.skeleton-loader {
+  width: 70px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 25%, rgba(255, 255, 255, 0.5) 50%, rgba(255, 255, 255, 0.2) 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite ease-in-out;
 }
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 
 
 

@@ -4,11 +4,10 @@ import { IoSearchSharp, IoArrowBackCircleSharp, IoArrowForwardCircleSharp } from
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../../reduxKit/store";
-import { GetBrandsWithService, GetOffersByBrand, OfferResponse } from '../../../reduxKit/actions/user/userOfferListing';
-import { GetBrandsBySubServiceOrService, GetServicesWithSubservices } from "../../../reduxKit/actions/offer/serviceSubServiceBrandSelection";
+import { GetBrandsWithService, GetOffersByBrand, GetSubServices, OfferResponse } from '../../../reduxKit/actions/user/userOfferListing';
+// import { GetBrandsBySubServiceOrService } from "../../../reduxKit/actions/offer/serviceSubServiceBrandSelection";
 import NoDataFound from '../../../assets/Images/no-data.png'
-
-
+ 
 interface NestedGameBrands {
   description: string;
   descriptionAr: string;
@@ -16,6 +15,12 @@ interface NestedGameBrands {
   name: string;
   nameAr: string;
   id: string;
+}
+
+
+interface Service {
+  id: string;
+  name: string;
 }
 
 
@@ -40,13 +45,18 @@ const TopUpSection: React.FC = () => {
   const iconUrl = queryParams.get("iconUrl") || "";
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedItem, setSelectedItem] = useState<string>("1");
+  const [selectedItem, setSelectedItem] = useState<string>("");
   const [itemsPerPage, setItemsPerPage] = useState(ITEMS_PER_PAGE_BIG_SCREEN);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [allGames, setAllGames] = useState<GameBrands[]>([]);
   const [subserviceNames, setSubserviceNames] = useState<SubserviceArray[]>([]);
-  const [brands, setBrands] = useState<any[]>([]);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: ITEMS_PER_PAGE_BIG_SCREEN,
+    totalCount: 0,
+    totalPages: 1
+  })
   const [selectedSubservice, setSelectedSubService] = useState<string>('All');
   const [offers, setOffers] = useState<{ [key: string]: number }>({});
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
@@ -56,7 +66,9 @@ const TopUpSection: React.FC = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setItemsPerPage(window.innerWidth >= 768 ? ITEMS_PER_PAGE_BIG_SCREEN : ITEMS_PER_PAGE_SMALL_SCREEN);
+     const newLimit = window.innerWidth >= 768 ? ITEMS_PER_PAGE_BIG_SCREEN : ITEMS_PER_PAGE_SMALL_SCREEN 
+      setItemsPerPage(newLimit)
+      setPagination((prev) =>({...prev, limit: newLimit}))
     };
     window.addEventListener("resize", handleResize);
     handleResize();
@@ -66,11 +78,14 @@ const TopUpSection: React.FC = () => {
   useEffect(() => {
     const getServiceWithSubservices = async () => {
       try {
-        const response = await dispatch(GetServicesWithSubservices());
+        const response = await dispatch(GetSubServices(serviceId));
         const services = response.payload;
-        const selectedService = services.find((service: { id: string }) => service.id === serviceId);
-        const subservices = selectedService.subservices.map((subservice: { id: string; name: string }) => subservice);
-        setSubserviceNames([{ id: "1", name: "All" }, ...subservices]);
+        console.log('sub services are', services.data);
+        setSubserviceNames([
+          { id: "1", name: "All" },
+          ...services.data.map(({ id, name } : Service) => ({ id, name }))
+        ]);
+        
         setSelectedItem("1");
       } catch (error) {
         console.error("getServiceWithSubservices error", error);
@@ -81,51 +96,16 @@ const TopUpSection: React.FC = () => {
     };
     getServiceWithSubservices();
   }, [dispatch, serviceId]);
-
-  useEffect(() => {
-    const fetchBrands = async () => {
-      try {
-        const response = await dispatch(GetBrandsBySubServiceOrService({ serviceId, subServiceId: selectedItem })).unwrap();
-        setBrands(response);
-      } catch (error) {
-        console.error("Error fetching brands:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    if (serviceId && selectedItem) {
-      fetchBrands();
-    }
-  }, [dispatch, serviceId, selectedItem]);
-
-  useEffect(() => {
-    const getBrandsWithServiceFunction = async () => {
-      try {
-        const response = await dispatch(GetBrandsWithService(serviceId));
-        if (response.payload.success) {
-          setAllGames(response.payload.data.data);   
-        }
-      } catch (error) {
-        console.error("Error fetching brands:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    getBrandsWithServiceFunction();
-  }, [dispatch, serviceId]);
-
-
-
+ 
   const filteredGames = useMemo(() => {
-    if (selectedItem === "1") {
-      return allGames.filter(game => game.brand.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    } else {
-      return allGames.filter(game => brands.some(brand => brand.id === game.brand.id) && game.brand.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    }
-  }, [selectedItem, allGames, brands, searchTerm]);
+    return allGames.filter(game => 
+      game.brand.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [allGames, searchTerm]);
 
-  const totalPages = Math.ceil(filteredGames.length / itemsPerPage);
+  console.log('Filtered Games',filteredGames);
+  
+   
   const currentItems = useMemo(() => {
     return filteredGames.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   }, [filteredGames, currentPage, itemsPerPage]);
@@ -137,7 +117,7 @@ const TopUpSection: React.FC = () => {
         for (const game of currentItems) {
     
           
-          const response = await dispatch(GetOffersByBrand(game.id));
+          const response = await dispatch(GetOffersByBrand({productId:game.id}));
           const result = response.payload as OfferResponse;
           offersMap[game.id] = result.data.data.data.offers.length;
         }
@@ -151,13 +131,34 @@ const TopUpSection: React.FC = () => {
     getOffersByBrandFunction();
   }, [dispatch, currentItems]);
 
+  useEffect(() => {
+    const getBrandsWithServiceFunction = async () => {
+      try {
+        console.log(serviceId, selectedItem ,'ServiceId & SelectedItem');
+        
+        const response = await dispatch(GetBrandsWithService({ServiceId:serviceId, SubserviceId: selectedItem == '1' ? '' : selectedItem , page:pagination.page , limit: pagination.limit}));
+        if (response.payload.success) {
+           setAllGames(response.payload.data.data); 
+           setPagination(response.payload.data.pagination)
+          console.log('GetBrandsWithService and Subservice',response.payload);
+            
+        }
+      } catch (error) {
+        console.error("Error fetching brands:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getBrandsWithServiceFunction();
+  }, [dispatch, serviceId,selectedItem, pagination.page, pagination.limit]);
+
   const handleNext = useCallback(() => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-  }, [currentPage, totalPages]);
+    if (pagination.page < pagination.totalPages) setPagination((prev) => ({...prev, page: prev.page + 1}));
+  }, [ pagination.page, pagination.totalPages]);
 
   const handlePrevious = useCallback(() => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  }, [currentPage]);
+    if (pagination.page > 1) setPagination((prev) => ({...prev,page:prev.page - 1}));
+  }, [pagination.page]);
 
   const handleSearch = useCallback(() => {
     setCurrentPage(1);
@@ -170,6 +171,8 @@ const TopUpSection: React.FC = () => {
   }, [handleSearch]);
 
   const handleFilter = useCallback((id: string, name: string) => {
+    console.log(id);
+    
     setLoading(true);
     setSelectedItem(id);
     setSelectedSubService(name);
@@ -274,9 +277,14 @@ const TopUpSection: React.FC = () => {
                       alt={game.brand.name}
                       style={{ zIndex: "-10" }}
                     />
-                    <p className="lg:px-[13px] px-[11px] py-[3px] lg:py-[8px] lg:h-[45px] offer-menu lg:text-[18px] font-medium rounded-[1000px]">
-                      {offers[game.id] || 0} Offers
-                    </p>
+                  <p className={`lg:px-[13px] px-[11px] py-[3px] lg:py-[8px] lg:h-[45px] offer-menu lg:text-[18px] font-medium rounded-[1000px] flex items-center justify-center ${offers[game.id] === undefined ? 'skeleton-loader': ''}`} >
+  {offers[game.id] === undefined ? (
+    <span className="invisible lg:px-[13px] px-[11px] py-[3px] lg:py-[8px]"> </span>
+  ) : (
+    `${offers[game.id]} Offers`
+  )}
+</p>
+
                     <p className="text-center lg:text-[20px] font-bold absolute bottom-3">{game.brand.name}</p>
                   </div>
                 ))) 
@@ -289,17 +297,17 @@ const TopUpSection: React.FC = () => {
         <div className="flex justify-center items-center gap-4 mt-6">
           <button
             onClick={handlePrevious}
-            disabled={currentPage === 1}
+            disabled={pagination.page === 1}
             className="disabled:opacity-50"
           >
             <IoArrowBackCircleSharp className="text-[26px] text-white" />
           </button>
           <span className="text-lg font-semibold text-white" style={{ fontFamily: "Unbounded" }}>
-            {currentPage} <span className="mx-1">of</span> {totalPages}
+            {pagination.page} <span className="mx-1">of</span> {pagination.totalPages}
           </span>
           <button
             onClick={handleNext}
-            disabled={currentPage === totalPages}
+            disabled={pagination.page === pagination.totalPages}
             className="rounded disabled:opacity-50"
           >
             <IoArrowForwardCircleSharp className="text-[26px] text-white" />
